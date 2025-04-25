@@ -6,9 +6,9 @@ local SaveManager = loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
 local Options = Library.Options
 local Toggles = Library.Toggles
 
---window
+--//Window
 local Window = Library:CreateWindow({
-    Title = "TweakingGUI",
+    Title = "Femboy Menu UwU",
     Footer = "ฅ^•ﻌ•^ฅ",
     ToggleKeybind = Enum.KeyCode.End,
     Center = true,
@@ -16,232 +16,240 @@ local Window = Library:CreateWindow({
 	Resizable = true,
 	ShowCustomCursor = true
 })
---tabs
+--//Tabs
 local Tabs = {
-	VisualsTab = Window:AddTab("Visuals", "paintbrush"),
-	TrollingTab = Window:AddTab("Trolling", "bomb"),
-	TweakingTab = Window:AddTab("Tools/Universal", "wrench"),
-	["SettingsTab"] = Window:AddTab("Settings", "settings"),
+	Visuals = Window:AddTab("Visuals", "paintbrush"),
+	Combat = Window:AddTab("Combat", "sword"),
+	Rage = Window:AddTab("Rage", "bomb"),
+	Movement = Window:AddTab("Movement", "rabbit"),
+	Skins = Window:AddTab("Skin Changer", "shirt"),
+	Misc = Window:AddTab("Miscellaneous", "package"),
+	Universal = Window:AddTab("Universal", "globe"),
+	Settings = Window:AddTab("Settings", "settings"),
 }
---VisualsTab
---Smokes
-local GlobalspValue = 100
-local GlobalsMaterial = tostring(Slate)
-local GlobalsaColor = Color3.fromRGB(99, 95, 98)
-local smokesFolder = Workspace:WaitForChild("Ray_Ignore"):WaitForChild("Smokes")
-local Smokes = Tabs.VisualsTab:AddLeftGroupbox("Smokes")
-local spToggle = Smokes:AddToggle("Smoke Particles Toggle", {
-    Text = "Adjust Particles",
-    Default = false,
-    Tooltip = "Enables or disables adjusting smoke particles",
-    Callback = function(spToggle)
-		if spToggle == false then
-			if smokeConnection then
-				print(">🔴smokeConnection Disconnected.")
-				smokeConnection:Disconnect()
-			end
-		else
-			print(">🟢smokeConnection Connected.")
-			smokeConnection = smokesFolder.ChildAdded:Connect(function(newSmoke)
-				local emitter = newSmoke:FindFirstChildWhichIsA("ParticleEmitter", true)
-				if emitter then
-					task.delay(0.1, function()
-						emitter.Rate = GlobalspValue
-					end)
-				end
-			end)
-		end
+--//CFG + Themes
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+
+SaveManager:SetIgnoreIndexes({ "MenuKeybind" })
+
+ThemeManager:SetFolder("GaySexGUI")
+SaveManager:SetFolder("GaySexGUI/CounterBlox")
+
+SaveManager:BuildConfigSection(Tabs.Settings)
+ThemeManager:ApplyToTab(Tabs.Settings)
+
+SaveManager:LoadAutoloadConfig()
+--//Variables
+local RunService = game:GetService("RunService")
+local MolotovFolder = Workspace:WaitForChild("Ray_Ignore"):WaitForChild("Fires")
+local SmokeFolder = Workspace:WaitForChild("Ray_Ignore"):WaitForChild("Smokes")
+--//Tables
+local Visuals = {particles = {smokes = {enabled = false, color = Color3.fromRGB(99, 95, 98), material = tostring(Slate), percent = 100}, molotovs = {enabled = false, color = Color3.fromRGB(218, 133, 65), material = tostring(Neon), percent = 100, transparency = 1}}}
+--particles = {smokes = {enabled = false, color = Color3.fromRGB(99, 95, 98), material = tostring(Slate), percent = 100}, molotovs = {enabled = false, color = Color3.fromRGB(218, 133, 65), material = tostring(Neon), percent = 100, transparency = 1}}
+local Combat = {}
+local Rage = {}
+local Movement = {}
+local Skins = {}
+local Misc = {}
+local Universal = {}
+--//Sections
+local Particles = Tabs.Visuals:AddLeftTabbox("Particles")
+local SmokeTab = Particles:AddTab("Smokes")
+local MolotovTab = Particles:AddTab("Molotovs")
+
+local Scripts = Tabs.Universal:AddLeftGroupbox("Scripts")
+
+local GroupBoxUnload = Tabs.Settings:AddRightGroupbox("Unload")
+--//Content
+local ManipSmoke = SmokeTab:AddToggle("ManipSmoke", {
+    Text = "Manipulate Smokes",
+	Default = false,
+    Callback = function(Value)
+		Visuals.particles.smokes.enabled = Value
 	end
 })
-local smToggle = Smokes:AddToggle("Smoke Material Toggle", {
-    Text = "Adjust Material",
-    Default = false,
-    Tooltip = "Enables or disables adjusting smoke aura material.",
-    Callback = function(smToggle)
-		if smToggle == false then
-			if smoke2Connection then
-				print(">🔴smoke2Connection Disconnected.")
-				smoke2Connection:Disconnect()
-			end
-		else
-			print(">🟢smoke2Connection Connected.")
-			smoke2Connection = smokesFolder.ChildAdded:Connect(function(newSmoke2)
-				task.delay(0.1, function()
-					newSmoke2.Material = Enum.Material[GlobalsMaterial]
-					newSmoke2.Color = GlobalsaColor
-				end)
-			end)
-		end
-	end
-})
-local saColorPicker = smToggle:AddColorPicker("Smoke Aura Color", {
+
+local SmokeColorPicker = ManipSmoke:AddColorPicker("SmokeAuraColor", {
     Default = Color3.fromRGB(99, 95, 98),
     Title = "Smoke Aura Color",
-    Transparency = 0,
-    Callback = function(saColor)
-		GlobalsaColor = saColor
+    Callback = function(Value)
+		Visuals.particles.smokes.color = Value
     end
 })
-local sParticle = Smokes:AddSlider("Smoke Particle", {
+
+local SmokePercent = SmokeTab:AddSlider("SmokeParticle", {
     Text = "Smoke Particle Rate",
     Default = 100,
     Min = 0,
     Max = 100,
     Rounding = 0,
     Compact = false,
-    Callback = function(spValue)
-		GlobalspValue = spValue
+    Callback = function(Value)
+		Visuals.particles.smokes.percent = Value
     end
 })
-local sMaterial = Smokes:AddDropdown("Smoke Aura Material", {
+
+local SmokeMaterial = SmokeTab:AddDropdown("SmokeAuraMaterial", {
     Values = {"Asphalt", "Basalt", "Brick", "Cardboard", "Carpet", "CeramicTiles", "ClayRoofTiles", "Cobblestone", "Concrete", "Corroded", "Metal", "Cracked", "Lava", "Diamond", "Plate", "Fabric", "Foil", "Forcefield", "Glacier", "Glass", "Granite", "Grass", "Ground", "Ice", "LeafyGrass", "Leather", "Limestone", "Marble", "Metal", "Mud", "Neon", "Pavement", "Pebble", "Plaster", "Plastic", "Rock", "RoofShingles", "Rubber", "Salt", "Sand", "Sandstone", "Slate", "SmoothPlastic", "Snow", "Wood", "WoodPlanks"},
     Default = 42,
     Multi = false,
     Text = "Smoke Aura Material",
     Tooltip = "Selects material for smoke aura.",
-    Callback = function(sMaterial)
-		GlobalsMaterial = tostring(sMaterial)
+    Callback = function(Value)
+		Visuals.particles.smokes.material = tostring(Value)
     end
 })
---Molotovs
-local GlobalmpValue = 100
-local GlobalmTransparency = 1
-local GlobalmMaterial = tostring(Neon)
-local GlobalmaColor = Color3.fromRGB(218, 133, 65)
-local molotovFolder = Workspace:WaitForChild("Ray_Ignore"):WaitForChild("Fires")
-local Molotovs = Tabs.VisualsTab:AddLeftGroupbox("Molotovs")
 
-local mpToggle = Molotovs:AddToggle("Molotov Particles Toggle", {
-    Text = "Adjust Particles",
-    Default = false,
-    Tooltip = "Enables or disables adjusting Molotov particles.",
-    Callback = function(mpToggle)
-		if mpToggle == false then
-			if molotovConnection then
-				print(">🔴molotovConnection Disconnected.")
-				molotovConnection:Disconnect()
-			end
-		else
-			print(">🟢molotovConnection Connected.")
-			molotovConnection = molotovFolder.ChildAdded:Connect(function(newMolotov)
-				local emitter = newMolotov:FindFirstChildWhichIsA("ParticleEmitter", true)
-				if emitter then
-					task.delay(0.1, function()
-						emitter.Rate = GlobalmpValue
-					end)
-				elseif newMolotov:FindFirstChild("Fire") then
-					task.delay(0.1, function()
-						emitter.Rate = GlobalmpValue
-					end)
-				end
-			end)
-		end
+local ResetSmoke = SmokeTab:AddButton({
+    Text = "Reset Smoke Properties",
+    Func = function()
+		Visuals.particles.smokes = {enabled = false, color = Color3.fromRGB(99, 95, 98), material = tostring(Slate), percent = 100}
+    end,
+    DoubleClick = true
+})
+
+local ManipMolotov = MolotovTab:AddToggle("ManipMolotov", {
+    Text = "Manipulate Molotovs",
+	Default = false,
+    Callback = function(Value)
+		Visuals.particles.molotovs.enabled = Value
 	end
 })
-local mmToggle = Molotovs:AddToggle("Molotov Material Toggle", {
-    Text = "Adjust Material",
-    Default = false,
-    Tooltip = "Enables or disables adjusting molotov area material and, transparency.",
-    Callback = function(mmToggle)
-		if mmToggle == false then
-			if molotov2Connection then
-				print(">🔴molotov2Connection Disconnected.")
-				molotov2Connection:Disconnect()
-			end
-		else
-			print(">🟢molotov2Connection Connected.")
-			molotov2Connection = molotovFolder.ChildAdded:Connect(function(newMolotov2)
-				task.delay(0.1, function()
-					newMolotov2.Transparency = GlobalmTransparency
-					newMolotov2.Material = Enum.Material[GlobalmMaterial]
-					newMolotov2.Color = GlobalmaColor
-				end)
-			end)
-		end
-	end
-})
-local maColorPicker = mmToggle:AddColorPicker("Molotov Area Color", {
+
+local MolotovColorPicker = ManipMolotov:AddColorPicker("MolotovAreaColor", {
     Default = Color3.fromRGB(218, 133, 65),
     Title = "Molotov Area Color",
-    Transparency = 0,
-    Callback = function(maColor)
-		GlobalmaColor = maColor
+    Callback = function(Value)
+		Visuals.particles.molotovs.color = Value
     end
 })
-local mParticle = Molotovs:AddSlider("Molotov Particle", {
+
+local MolotovPercent = MolotovTab:AddSlider("MolotovParticle", {
     Text = "Molotov Particle Rate",
     Default = 100,
     Min = 0,
     Max = 100,
     Rounding = 0,
     Compact = false,
-    Callback = function(mpValue)
-		GlobalmpValue = mpValue
+    Callback = function(Value)
+		Visuals.particles.molotovs.percent = Value
     end
 })
-local mTransparency = Molotovs:AddSlider("Molotov Area Transparency", {
-    Text = "Molotov Area Transparency",
+
+local MolotovTransparency = MolotovTab:AddSlider("MolotovTransparency", {
+    Text = "Transparency",
     Default = 1,
     Min = 0,
     Max = 1,
     Rounding = 1,
     Compact = false,
-    Callback = function(mtValue)
-		GlobalmTransparency = mtValue
+    Callback = function(Value)
+		Visuals.particles.molotovs.transparency = Value
     end
 })
-local mMaterial = Molotovs:AddDropdown("Molotov Area Material", {
+
+local MolotovMaterial = MolotovTab:AddDropdown("MolotovMaterial", {
     Values = {"Asphalt", "Basalt", "Brick", "Cardboard", "Carpet", "CeramicTiles", "ClayRoofTiles", "Cobblestone", "Concrete", "Corroded", "Metal", "Cracked", "Lava", "Diamond", "Plate", "Fabric", "Foil", "Forcefield", "Glacier", "Glass", "Granite", "Grass", "Ground", "Ice", "LeafyGrass", "Leather", "Limestone", "Marble", "Metal", "Mud", "Neon", "Pavement", "Pebble", "Plaster", "Plastic", "Rock", "RoofShingles", "Rubber", "Salt", "Sand", "Sandstone", "Slate", "SmoothPlastic", "Snow", "Wood", "WoodPlanks"},
     Default = 31,
     Multi = false,
-    Text = "Molotov Area Material",
-    Tooltip = "Selects material for molotov area.",
-    Callback = function(mMaterial)
-		GlobalmMaterial = tostring(mMaterial)
+    Text = "Smoke Aura Material",
+    Tooltip = "Selects material for smoke aura.",
+    Callback = function(Value)
+		Visuals.particles.molotovs.material = tostring(Value)
     end
 })
---World
 
---SettingsTab
-local GroupboxUnload = Tabs["SettingsTab"]:AddLeftGroupbox("Unload")
-local Unload = GroupboxUnload:AddButton({
-    Text = "Unload",
+local ResetMolotov = MolotovTab:AddButton({
+    Text = "Reset Molotov Properties",
     Func = function()
-		print("Unloading...")
-		print("-----")
-		if smokeConnection then
-			print(">🔴smokeConnection Disconnected.")
-			smokeConnection:Disconnect()
-		end
-		if molotovConnection then
-			print(">🔴molotovConnection Disconnected.")
-			molotovConnection:Disconnect()
-		end
-		if smoke2Connection then
-			print(">🔴smoke2Connection Disconnected.")
-			smoke2Connection:Disconnect()
-		end
-		if molotov2Connection then
-			print(">🔴molotov2Connection Disconnected.")
-			molotov2Connection:Disconnect()
-		end
-		print("Unloaded")
-		if Library then
-			Library:Unload()
-		end
+		Visuals.particles.molotovs = {enabled = false, color = Color3.fromRGB(99, 95, 98), material = tostring(Neon), percent = 100, transparency = 1}
     end,
     DoubleClick = true
 })
 
-ThemeManager:SetLibrary(Library)
-SaveManager:SetLibrary(Library)
+local InfYield = Scripts:AddButton({
+    Text = "Infinite Yield",
+    Func = function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+    end,
+    DoubleClick = false
+})
 
-SaveManager:SetIgnoreIndexes({ "MenuKeybind" })
+local DexV3 = Scripts:AddButton({
+    Text = "Dex v3",
+    Func = function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/Babyhamsta/RBLX_Scripts/main/Universal/BypassedDarkDexV3.lua", true))()
+    end,
+    DoubleClick = false
+})
 
-ThemeManager:SetFolder("TweakingGUI")
-SaveManager:SetFolder("TweakingGUI/CounterBlox")
+local UnamedESP = Scripts:AddButton({
+    Text = "Unamed ESP",
+    Func = function()
+		loadstring(game:HttpGet('https://raw.githubusercontent.com/ic3w0lf22/Unnamed-ESP/master/UnnamedESP.lua'))()
+    end,
+    DoubleClick = false
+})
 
-SaveManager:BuildConfigSection(Tabs["SettingsTab"])
-ThemeManager:ApplyToTab(Tabs["SettingsTab"])
-
-SaveManager:LoadAutoloadConfig()
+local UnloadButton = GroupBoxUnload:AddButton({
+    Text = "Unload",
+    Func = function()
+		loadstring(game:HttpGet('https://raw.githubusercontent.com/FlaxiemUwU/RobloxTweakingHub/refs/heads/main/Unload.lua'))()
+    end,
+    DoubleClick = true
+})
+--//Functions
+local function Visuals()
+	if Visuals.particles.smokes.enabled == false then
+		if smokeConnection then
+			smokeConnection:Disconnect()
+		end
+	else
+		smokeConnection = SmokeFolder.ChildAdded:Connect(function(newSmoke)
+			task.delay(0.1, function()
+				newSmoke.Material = Enum.Material[Visuals.particles.smokes.material]
+				newSmoke.Color = Visuals.particles.smokes.color
+			end)
+			local emitter = newSmoke:FindFirstChildWhichIsA("ParticleEmitter", true)
+			if emitter then
+				task.delay(0.1, function()
+					emitter.Rate = Visuals.particles.smokes.percent
+				end)
+			end
+		end)
+	end
+	if Visuals.particles.molotovs.enabled == false then
+		if molotovConnection then
+			molotovConnection:Disconnect()
+		end
+	else
+		molotovConnection = MolotovFolder.ChildAdded:Connect(function(newMolotov)
+			task.delay(0.1, function()
+				newMolotov.Material = Enum.Material[Visuals.particles.smokes.material]
+				newMolotov.Color = Visuals.particles.smokes.color
+			end)
+			local emitter = newMolotov:FindFirstChildWhichIsA("ParticleEmitter", true)
+			if newMolotov:FindFirstChild("Fire") then
+				emitter.Rate = Visuals.particles.molotovs.percent
+			end
+		end)
+	end
+end
+--[[//Functions
+local function Visuals()
+local function Combat()
+local function Rage()
+local function Movement()
+local function Misc()
+local function Universal()
+]]
+--//Run Functions
+RunService.RenderStepped:Connect(function()
+	do Visuals() end
+--	do Combat() end
+--	do Rage() end
+--	do Movement() end
+--	do Misc() end
+--	do Universal()end
+end
