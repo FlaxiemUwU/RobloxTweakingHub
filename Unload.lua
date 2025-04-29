@@ -4,8 +4,14 @@ end
 if molotovConnection then
 	molotovConnection:Disconnect()
 end
-if RunServiceConnection then
-	RunServiceConnection:Disconnect()
+if CharacterAddConnection then
+	CharacterAddConnection:Disconnect()
+end
+if CharacterRemoveConnection then
+	CharacterRemoveConnection:Disconnect()
+end
+if runServiceConnection then
+	runServiceConnection:Disconnect()
 end
 if Library then
 	Library:Unload()
